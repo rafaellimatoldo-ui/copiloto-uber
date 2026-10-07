@@ -75,15 +75,19 @@ ARQUIVO_DADOS = "dados_uber.csv"
 
 def carregar_dados():
     if os.path.exists(ARQUIVO_DADOS):
-        df = pd.read_csv(ARQUIVO_DADOS)
-        df['Data'] = pd.to_datetime(df['Data'])
-        return df
-    else:
-        return pd.DataFrame(columns=[
-            "Data", "Dia_Semana", "Turno_Horario", "Categoria", 
-            "Regiao", "Horas_Rodadas", "KM_Rodados", "Faturamento_Bruto", 
-            "Preco_Combustivel", "Consumo_KML", "Custo_Combustivel", "Lucro_Liquido", "Lucro_Por_Hora"
-        ])
+        try:
+            df = pd.read_csv(ARQUIVO_DADOS)
+            if not df.empty and 'Data' in df.columns:
+                df['Data'] = pd.to_datetime(df['Data'], format='mixed', errors='coerce')
+            return df
+        except Exception:
+            pass
+            
+    return pd.DataFrame(columns=[
+        "Data", "Dia_Semana", "Turno_Horario", "Categoria", 
+        "Regiao", "Horas_Rodadas", "KM_Rodados", "Faturamento_Bruto", 
+        "Preco_Combustivel", "Consumo_KML", "Custo_Combustivel", "Lucro_Liquido", "Lucro_Por_Hora"
+    ])
 
 def salvar_dados(df):
     df.to_csv(ARQUIVO_DADOS, index=False)
