@@ -4,6 +4,7 @@ import numpy as np
 import os
 import base64
 from datetime import datetime
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Copiloto Uber Estratégico",
@@ -57,6 +58,18 @@ def carregar_imagem_fundo():
 css = carregar_imagem_fundo()
 if css:
     st.markdown(css, unsafe_allow_html=True)
+
+# Função para fazer o celular/navegador falar qualquer texto
+def falar_texto_no_navegador(texto):
+    js_code = f"""
+    <script>
+        var msg = new SpeechSynthesisUtterance("{texto}");
+        msg.lang = "pt-BR";
+        msg.rate = 1.0;
+        window.speechSynthesis.speak(msg);
+    </script>
+    """
+    components.html(js_code, height=0)
 
 ARQUIVO_DADOS = "dados_uber.csv"
 
@@ -143,9 +156,9 @@ with col_painel:
                     st.error("Informe um faturamento válido.")
 
     with aba2:
-        st.subheader("💡 Diagnóstico")
+        st.subheader("💡 Diagnóstico do Agente")
         if len(df_uber) == 0:
-            st.info("Registre turnos para gerar estratégias.")
+            st.info("Registre turnos para gerar estratégias com áudio.")
         else:
             total_faturado = df_uber["Faturamento_Bruto"].sum()
             total_lucro = df_uber["Lucro_Liquido"].sum()
@@ -155,6 +168,11 @@ with col_painel:
             c1.metric("Faturado", f"R$ {total_faturado:.2f}")
             c2.metric("Lucro", f"R$ {total_lucro:.2f}")
             c3.metric("R$/Hora", f"R$ {media_hora:.2f}")
+
+            st.markdown("---")
+            if st.button("🔊 Ouvir Resumo em Áudio"):
+                mensagem_voz = f"Diagnostico do copiloto: Voce faturou um total de {total_faturado:.0f} reais, resultando em um lucro liquido de {total_lucro:.0f} reais, com uma media de {media_hora:.0f} reais por hora rodada."
+                falar_texto_no_navegador(mensagem_voz)
 
     with aba3:
         st.subheader("📊 Histórico")
