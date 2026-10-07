@@ -78,7 +78,8 @@ def carregar_dados():
         try:
             df = pd.read_csv(ARQUIVO_DADOS)
             if not df.empty and 'Data' in df.columns:
-                df['Data'] = pd.to_datetime(df['Data'], format='mixed', errors='coerce')
+                df['Data'] = pd.to_datetime(df['Data'], errors='coerce')
+                df = df.dropna(subset=['Data'])
             return df
         except Exception:
             pass
@@ -144,7 +145,7 @@ with col_painel:
                     lucro_hora = lucro_liq / horas if horas > 0 else 0
                     
                     novo_registro = pd.DataFrame([{
-                        "Data": data, "Dia_Semana": dia_nome, "Turno_Horario": turno,
+                        "Data": pd.to_datetime(data), "Dia_Semana": dia_nome, "Turno_Horario": turno,
                         "Categoria": categoria, "Regiao": regiao, "Horas_Rodadas": horas,
                         "KM_Rodados": km, "Faturamento_Bruto": faturamento,
                         "Preco_Combustivel": preco_combustivel, "Consumo_KML": consumo_kml,
@@ -156,6 +157,7 @@ with col_painel:
                     salvar_dados(df_uber)
                     
                     st.success(f"Salvo! Lucro: R$ {lucro_liq:.2f} (R$ {lucro_hora:.2f}/h)")
+                    st.rerun()
                 else:
                     st.error("Informe um faturamento válido.")
 
@@ -181,5 +183,10 @@ with col_painel:
     with aba3:
         st.subheader("📊 Histórico")
         if len(df_uber) > 0:
-            st.dataframe(df_uber[["Data", "Turno_Horario", "Lucro_Liquido", "Lucro_Por_Hora"]].sort_values(by="Data", ascending=False), use_container_width=True)
-            st.line_chart(df_uber[["Data", "Faturamento_Bruto", "Lucro_Liquido"]].set_index("Data"))
+            df_exibicao = df_uber.copy()
+            df_exibicao['Data'] = df_exibicao['Data'].dt.strftime('%d/%m/%Y')
+            st.dataframe(df_exibicao[["Data", "Turno_Horario", "Lucro_Liquido", "Lucro_Por_Hora"]], use_container_width=True)
+            
+            chart_df = df_uber[["Data", "Faturamento_Bruto", "Lucro_Liquido"]].dropna()
+            if not chart_df.empty:
+                st.line_chart(chart_df.set_index("Data"))
