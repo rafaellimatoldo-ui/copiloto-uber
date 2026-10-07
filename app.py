@@ -59,7 +59,7 @@ css = carregar_imagem_fundo()
 if css:
     st.markdown(css, unsafe_allow_html=True)
 
-# Função para fazer o celular/navegador falar qualquer texto
+# Função para reproduzir voz no navegador/celular
 def falar_texto_no_navegador(texto):
     js_code = f"""
     <script>
